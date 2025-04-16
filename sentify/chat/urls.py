@@ -11,3 +11,4 @@ urlpatterns = [
     path('chat/<int:conversation_id>/send_message/', views.send_message, name='send_message'),
     path('register/', views.user_register, name='register'), 
 ]
+
