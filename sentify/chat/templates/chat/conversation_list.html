@@ -1,0 +1,226 @@
+{% load static chat_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sentify Chat</title>
+    <link rel="stylesheet" href="{% static 'chat/style.css' %}" />
+</head>
+<body>
+    <div class="chat-container">
+        <div class="sidebar" id="sidebar">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <h1 style="margin: 0;">Conversations</h1>
+                <div class="user-toggle" style="position: relative;">
+                    <button id="userToggleBtn" style="background: none; border: none; cursor: pointer; padding: 5px; width: 30px; height: 25px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <span style="display: block; height: 3px; background-color: #333; border-radius: 2px;"></span>
+                        <span style="display: block; height: 3px; background-color: #333; border-radius: 2px;"></span>
+                        <span style="display: block; height: 3px; background-color: #333; border-radius: 2px;"></span>
+                    </button>
+                    <div id="userDropdown" style="display: none; position: absolute; background: transparent; border: 1px solid #ccc; right: 0; z-index: 1000; min-width: 120px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                        <a href="{% url 'logout' %}" style="display: block; padding: 10px 15px; text-decoration: none; color: #333; font-weight: 600; border-radius: 5px;">
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="conversation-list" id="conversation-list">
+                {% for conversation in conversations %}
+                <a href="#" class="conversation-item" data-conversation-id="{{ conversation.id }}">
+                    <div class="participants">
+                        {{ conversation.participants.all|usernames_excluding:request.user }}
+                    </div>
+                    <div class="last-message">
+                        {% with last_message=conversation.messages.last %}
+                            {% if last_message %}
+                                {{ last_message.content|truncatechars:30 }}
+                            {% else %}
+                                No messages yet
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </a>
+                {% empty %}
+                <p>No conversations found.</p>
+                {% endfor %}
+            </div>
+            <a href="{% url 'new_conversation' %}" style="padding: 15px 20px; display: block; font-weight: 700; background-color: rgba(118, 75, 162, 0.8); text-align: center; border-radius: 0 0 15px 15px;">New Conversation</a>
+        </div>
+        <div id="dragbar" style="width: 5px; cursor: col-resize; background-color: rgba(255,255,255,0.2);"></div>
+        <div class="main-chat" id="main-chat">
+            <div class="chat-header" id="chat-header">
+                Select a conversation
+            </div>
+            <div id="welcome-note" style="text-align:center; margin-top: 40px;">
+                <img src="{% static 'chat/logo.png' %}" alt="Sentify Logo" style="height: 120px; margin-bottom: 20px;" />
+                <h2>Welcome to Sentify Chat!</h2>
+                <p>Please select a conversation from the left to start chatting.</p>
+            </div>
+            <div class="chat-messages" id="chat-messages" style="display:none;">
+            </div>
+            <form id="chat-form" method="post" action="" style="display:none;">
+                {% csrf_token %}
+                <input type="text" name="content" id="message-input" placeholder="Type a message" autocomplete="off" required />
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded and parsed');
+            const toggleBtn = document.getElementById('userToggleBtn');
+            const dropdown = document.getElementById('userDropdown');
+            const conversationList = document.getElementById('conversation-list');
+            const chatHeader = document.getElementById('chat-header');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatForm = document.getElementById('chat-form');
+            const messageInput = document.getElementById('message-input');
+
+            console.log('Conversation list element:', conversationList);
+
+            // User menu toggle
+            toggleBtn.addEventListener('click', function() {
+                if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+                    dropdown.style.display = 'block';
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!toggleBtn.contains(event.target) && !dropdown.contains(event.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            // Resize feature for dragbar
+            const dragbar = document.getElementById('dragbar');
+            const sidebar = document.getElementById('sidebar');
+            const mainChat = document.getElementById('main-chat');
+            let isDragging = false;
+
+            dragbar.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                document.body.style.cursor = 'col-resize';
+            });
+
+            document.addEventListener('mouseup', function(e) {
+                if (isDragging) {
+                    isDragging = false;
+                    document.body.style.cursor = 'default';
+                }
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                let offsetRight = document.body.offsetWidth - (e.clientX);
+                let minWidth = 150; // minimum width for sidebar and main chat
+                let maxWidth = document.body.offsetWidth - minWidth;
+
+                if (e.clientX < minWidth) {
+                    sidebar.style.width = minWidth + 'px';
+                    mainChat.style.width = (document.body.offsetWidth - minWidth - dragbar.offsetWidth) + 'px';
+                } else if (e.clientX > maxWidth) {
+                    sidebar.style.width = maxWidth + 'px';
+                    mainChat.style.width = (document.body.offsetWidth - maxWidth - dragbar.offsetWidth) + 'px';
+                } else {
+                    sidebar.style.width = e.clientX + 'px';
+                    mainChat.style.width = (document.body.offsetWidth - e.clientX - dragbar.offsetWidth) + 'px';
+                }
+            });
+
+            // Load chat messages dynamically when a conversation is clicked
+            conversationList.addEventListener('click', function(e) {
+                console.log('Click event on conversation list:', e);
+                const target = e.target.closest('.conversation-item');
+                if (!target) {
+                    console.log('Clicked element is not a conversation item');
+                    return;
+                }
+                e.preventDefault();
+
+                console.log('Conversation clicked:', target);
+
+                const conversationId = target.getAttribute('data-conversation-id');
+                if (!conversationId) {
+                    console.warn('No conversation ID found on clicked item');
+                    return;
+                }
+
+                console.log('Fetching messages for conversation ID:', conversationId);
+
+                // Fetch chat messages via AJAX
+                fetch(`/chat/messages/${conversationId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Received chat messages:', data);
+
+                        // Update chat header
+                        chatHeader.textContent = 'Chat with ' + data.participants.join(', ');
+
+                        // Update chat messages
+                        chatMessages.innerHTML = '';
+                        if (data.messages.length === 0) {
+                            chatMessages.innerHTML = '<p>No messages yet.</p>';
+                        } else {
+                            data.messages.forEach(msg => {
+                                const msgDiv = document.createElement('div');
+                                msgDiv.className = 'message ' + (msg.is_sender ? 'sent-by-me' : 'sent-by-other');
+                                msgDiv.innerHTML = `
+                                    <div class="content">${msg.content}</div>
+                                    <div class="timestamp">${msg.timestamp}</div>
+                                    <div class="sentiment sentiment-hover">[${msg.sentiment}]</div>
+                                `;
+                                chatMessages.appendChild(msgDiv);
+                            });
+                        }
+
+                        // Show chat form and update form action
+                        chatForm.style.display = 'block';
+                        chatForm.action = `/chat/send_message/${conversationId}/`;
+                        messageInput.value = '';
+                        messageInput.focus();
+                    })
+                    .catch(error => {
+                        console.error('Error loading chat messages:', error);
+                    });
+            });
+
+            // Optional: AJAX form submission for sending messages
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(chatForm);
+                fetch(chatForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Append new message to chatMessages
+                        const msgDiv = document.createElement('div');
+                        msgDiv.className = 'message sent-by-me';
+                        msgDiv.innerHTML = `
+                            <div class="content">${data.message.content}</div>
+                            <div class="timestamp">${data.message.timestamp}</div>
+                            <div class="sentiment sentiment-hover">[${data.message.sentiment}]</div>
+                        `;
+                        chatMessages.appendChild(msgDiv);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        messageInput.value = '';
+                    } else {
+                        alert('Failed to send message.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error sending message:', error);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

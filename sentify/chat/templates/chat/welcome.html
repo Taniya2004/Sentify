@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Welcome - Sentify Chat</title>
+    <link rel="stylesheet" href="{% static 'chat/style.css' %}" />
+</head>
+<body>
+    <div class="welcome-container" style="text-align: center; margin-top: 100px;">
+        <img src="{% static 'chat/logo.png' %}" alt="Sentify Logo" style="height: 120px;" />
+        <h1>Welcome to Sentify Chat!</h1>
+        <p><a href="{% url 'login' %}">Login</a> or <a href="{% url 'register' %}">Register</a> to start chatting.</p>
+    </div>
+</body>
+</html>
