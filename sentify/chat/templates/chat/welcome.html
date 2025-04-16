@@ -7,11 +7,12 @@
     <title>Welcome - Sentify Chat</title>
     <link rel="stylesheet" href="{% static 'chat/style.css' %}" />
 </head>
+
 <body>
     <div class="welcome-container" style="text-align: center; margin-top: 100px;">
         <img src="{% static 'chat/logo.png' %}" alt="Sentify Logo" style="height: 120px;" />
-        <h1>Welcome to Sentify Chat!</h1>
-        <p><a href="{% url 'login' %}">Login</a> or <a href="{% url 'register' %}">Register</a> to start chatting.</p>
+        <h1>Hello! Join the Conversation at Sentify Chat!</h1>
+        <p>Your go-to platform for meaningful conversations. <br> <a href="{% url 'login' %}">Login</a> or <a href="{% url 'register' %}">Register</a> to start chatting.</p>
     </div>
 </body>
 </html>
