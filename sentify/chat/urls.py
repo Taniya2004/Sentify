@@ -7,7 +7,8 @@ urlpatterns = [
     path('', views.welcome_page, name='welcome_page'),
     path('conversations/', views.conversation_list, name='conversation_list'),
     path('new/', views.new_conversation, name='new_conversation'),
-    path('chat/<int:conversation_id>/', views.chat_room, name='chat_room'),
+    path('chat/<int:conversation_id>/', views.chat_room, name='chat_room'),  # Redirects to conversation_list now
     path('chat/<int:conversation_id>/send_message/', views.send_message, name='send_message'),
-    path('register/', views.user_register, name='register'), 
+    path('register/', views.user_register, name='register'),
+    path('a/', views.a_page, name='a_page'),
 ]

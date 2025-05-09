@@ -52,11 +52,13 @@
             <div class="chat-header" id="chat-header">
                 Select a conversation
             </div>
+            <!--
             <div id="welcome-note" style="text-align:center; margin-top: 40px;">
                 <img src="{% static 'chat/logo.png' %}" alt="Sentify Logo" style="height: 120px; margin-bottom: 20px;" />
                 <h2>Welcome to Sentify Chat!</h2>
                 <p>Please select a conversation from the left to start chatting.</p>
             </div>
+            -->
             <div class="chat-messages" id="chat-messages" style="display:none;">
             </div>
             <form id="chat-form" method="post" action="" style="display:none;">
@@ -151,7 +153,7 @@
                 console.log('Fetching messages for conversation ID:', conversationId);
 
                 // Fetch chat messages via AJAX
-                fetch(`/chat/messages/${conversationId}/`)
+                fetch(`/ajax/chat/messages/${conversationId}/`, { credentials: 'same-origin' })
                     .then(response => response.json())
                     .then(data => {
                         console.log('Received chat messages:', data);
@@ -167,18 +169,37 @@
                             data.messages.forEach(msg => {
                                 const msgDiv = document.createElement('div');
                                 msgDiv.className = 'message ' + (msg.is_sender ? 'sent-by-me' : 'sent-by-other');
-                                msgDiv.innerHTML = `
-                                    <div class="content">${msg.content}</div>
+                                // Remove inline styles to allow CSS to control layout
+                                msgDiv.style.textAlign = '';
+                                msgDiv.style.marginLeft = '';
+                                msgDiv.style.marginRight = '';
+                                msgDiv.style.maxWidth = '';
+                                msgDiv.style.whiteSpace = 'normal'; // allow wrapping
+
+                                // Add avatar emoji before message content
+                                const avatarSpan = document.createElement('span');
+                                avatarSpan.className = 'avatar';
+                                avatarSpan.textContent = msg.is_sender ? '🟢' : '⚪';
+
+                                const contentDiv = document.createElement('div');
+                                contentDiv.className = 'message-content';
+                                contentDiv.innerHTML = `
+                                    <div>${msg.content}</div>
                                     <div class="timestamp">${msg.timestamp}</div>
                                     <div class="sentiment sentiment-hover">[${msg.sentiment}]</div>
                                 `;
+
+                                msgDiv.appendChild(avatarSpan);
+                                msgDiv.appendChild(contentDiv);
                                 chatMessages.appendChild(msgDiv);
                             });
                         }
+                        chatMessages.style.display = 'block';
 
                         // Show chat form and update form action
                         chatForm.style.display = 'block';
-                        chatForm.action = `/chat/send_message/${conversationId}/`;
+                        chatForm.action = `/chat/${conversationId}/send_message/`;
+                        console.log('Form action set to:', chatForm.action);
                         messageInput.value = '';
                         messageInput.focus();
                     })
@@ -190,26 +211,86 @@
             // Optional: AJAX form submission for sending messages
             chatForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+                console.log('Submitting chat form with action:', chatForm.action);
+                if (!chatForm.action) {
+                    alert('Please select a conversation before sending a message.');
+                    return;
+                }
                 const formData = new FormData(chatForm);
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                const csrftoken = getCookie('csrftoken');
+
                 fetch(chatForm.action, {
                     method: 'POST',
                     body: formData,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrftoken,
                     },
+                    credentials: 'same-origin',
                 })
-                .then(response => response.json())
+                .then(response => {
+                    console.log('Fetch response:', response);
+                    return response.text().then(text => {
+                        console.log('Response text:', text);
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            throw new Error('Invalid JSON: ' + e.message);
+                        }
+                    });
+                })
                 .then(data => {
-                    if (data.success) {
+                    console.log('Send message response:', data);
+                        if (data.success) {
                         // Append new message to chatMessages
                         const msgDiv = document.createElement('div');
                         msgDiv.className = 'message sent-by-me';
-                        msgDiv.innerHTML = `
-                            <div class="content">${data.message.content}</div>
+                        if (msgDiv.classList.contains('sent-by-me')) {
+                            msgDiv.style.textAlign = 'right';
+                            msgDiv.style.marginLeft = 'auto';
+                            msgDiv.style.marginRight = '0';
+                        } else {
+                            msgDiv.style.textAlign = 'left';
+                            msgDiv.style.marginRight = 'auto';
+                            msgDiv.style.marginLeft = '0';
+                        }
+                        // Dynamically set max width based on chat container width
+                        const maxWidth = chatMessages.clientWidth * 0.7; // 70% max width
+                        msgDiv.style.maxWidth = maxWidth + 'px';
+                        msgDiv.style.whiteSpace = 'normal'; // allow wrapping
+
+                        // Add avatar emoji before message content
+                        const avatarSpan = document.createElement('span');
+                        avatarSpan.className = 'avatar';
+                        avatarSpan.textContent = '🟢';
+
+                        const contentDiv = document.createElement('div');
+                        contentDiv.className = 'message-content';
+                        contentDiv.innerHTML = `
+                            <div>${data.message.content}</div>
                             <div class="timestamp">${data.message.timestamp}</div>
                             <div class="sentiment sentiment-hover">[${data.message.sentiment}]</div>
                         `;
+
+                        msgDiv.appendChild(avatarSpan);
+                        msgDiv.appendChild(contentDiv);
                         chatMessages.appendChild(msgDiv);
+                        chatMessages.style.display = 'block';
                         chatMessages.scrollTop = chatMessages.scrollHeight;
                         messageInput.value = '';
                     } else {
@@ -218,6 +299,7 @@
                 })
                 .catch(error => {
                     console.error('Error sending message:', error);
+                    alert('Error sending message: ' + error.message);
                 });
             });
         });

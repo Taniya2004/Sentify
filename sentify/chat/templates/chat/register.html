@@ -2,27 +2,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Register - Sentify Chat</title>
-    <link rel="stylesheet" href="{% static 'chat/style.css' %}" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Register - Sentify</title>
+  <link rel="stylesheet" href="{% static 'chat/register.css' %}" />
 </head>
 <body>
-    <div class="registration-container" style="text-align: center; margin-top: 100px;">
-        <h1>Register</h1>
+  <div class="main-container">
+
+    <div class="left-section">
+      <div class="overlay">
+        <h2>Welcome to Sentify</h2>
+        <p>Your smart chat assistant awaits.</p>
+        <img src="{% static 'chat/register1.png' %}" alt="Chatbot Illustration" />
+      </div>
+    </div>
+
+    <div class="right-section">
+      <div class="register-card glassy">
+        <h1>Join Sentify</h1>
+        <p>Create your account to get started</p>
         <form method="POST">
-            {% csrf_token %}
-            <input type="text" name="username" placeholder="Username" required />
-            <input type="password" name="password" placeholder="Password" required />
-            <input type="password" name="password_confirm" placeholder="Confirm Password" required />
-            <button type="submit">Register</button>
+          {% csrf_token %}
+          <input type="text" name="username" placeholder="Username" required />
+          <input type="password" name="password" placeholder="Password" required />
+          <input type="password" name="password_confirm" placeholder="Confirm Password" required />
+          <button type="submit">Register</button>
         </form>
         {% if messages %}
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
+          {% for message in messages %}
+            <p class="message">{{ message }}</p>
+          {% endfor %}
         {% endif %}
-        <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+        <p class="login-link">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+      </div>
     </div>
+
+  </div>
 </body>
 </html>

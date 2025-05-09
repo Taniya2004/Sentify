@@ -7,20 +7,19 @@ from .models import Message, Conversation
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 import json
-
-# For sentiment analysis, using TextBlob
 from textblob import TextBlob
-
-from django.contrib.auth.decorators import login_required
-
 import logging
+from django.shortcuts import render
 
 logger = logging.getLogger(__name__)
 
+def a_page(request):
+    return render(request, 'chat/a.html')
+
 def welcome_page(request):
     logger.info(f"Accessed welcome_page, user authenticated: {request.user.is_authenticated}")
+    logger.info("Rendering welcome.html template.")
     if request.user.is_authenticated:
         return redirect('conversation_list')
     return render(request, 'chat/welcome.html')
@@ -49,28 +48,51 @@ def conversation_list(request):
     conversations = request.user.conversations.all()
     return render(request, 'chat/conversation_list.html', {'conversations': conversations})
 
+from django.shortcuts import redirect
+
 @login_required
 def chat_room(request, conversation_id):
-    conversation = get_object_or_404(Conversation, id=conversation_id)
+    # Redirect chat_room URL to conversation_list for unified AJAX single-page chat UI
+    return redirect('conversation_list')
+
+'''
+@login_required
+def chat_room(request, conversation_id):
+    try:
+        conversation = get_object_or_404(Conversation, id=conversation_id)
+    except Exception as e:
+        logger.error(f"Error retrieving conversation: {e}")
+        return redirect('conversation_list')
+    
     if request.user not in conversation.participants.all():
         return redirect('conversation_list')
+    
     messages = conversation.messages.order_by('timestamp')
     other_participants = conversation.participants.exclude(id=request.user.id)
+    
     return render(request, 'chat/chat_room.html', {
         'conversation': conversation,
         'messages': messages,
         'other_participants': other_participants,
     })
-
+'''
 @login_required
-@csrf_exempt
 def send_message(request, conversation_id):
+    logger.info(f"send_message called with method {request.method} by user {request.user}")
     if request.method == 'POST':
         conversation = get_object_or_404(Conversation, id=conversation_id)
         if request.user not in conversation.participants.all():
+            logger.warning(f"Unauthorized send_message attempt by user {request.user} for conversation {conversation_id}")
             return JsonResponse({'error': 'Unauthorized'}, status=403)
-        data = json.loads(request.body)
-        content = data.get('content', '')
+        try:
+            if request.content_type == 'application/json':
+                data = json.loads(request.body)
+                content = data.get('content', '')
+            else:
+                content = request.POST.get('content', '')
+        except Exception as e:
+            logger.error(f"Error parsing send_message data: {e}")
+            return JsonResponse({'error': 'Invalid data'}, status=400)
 
         # Sentiment analysis
         blob = TextBlob(content)
@@ -83,12 +105,17 @@ def send_message(request, conversation_id):
             sentiment = 'Neutral'
 
         message = Message.objects.create(conversation=conversation, sender=request.user, content=content, sentiment=sentiment)
+        logger.info(f"Message created with id {message.id} in conversation {conversation_id} by user {request.user}")
         return JsonResponse({
-            'sender': message.sender.username,
-            'content': message.content,
-            'sentiment': message.sentiment,
-            'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            'success': True,
+            'message': {
+                'sender': message.sender.username,
+                'content': message.content,
+                'sentiment': message.sentiment,
+                'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            }
         })
+    logger.warning(f"Invalid request method {request.method} for send_message by user {request.user}")
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 @login_required
@@ -108,7 +135,7 @@ def new_conversation(request):
         else:
             conversation = Conversation.objects.create()
             conversation.participants.add(request.user, other_user)
-        return redirect('chat_room', conversation_id=conversation.id)
+        return redirect('conversation_list')
     return render(request, 'chat/new_conversation.html')
 
 def user_register(request):
