@@ -98,7 +98,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # Set STATIC_ROOT to a valid path
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
-    BASE_DIR / 'sentify' / 'chat' / 'static',
+    BASE_DIR / 'chat' / 'static',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
