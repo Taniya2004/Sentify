@@ -12,11 +12,13 @@ header {
   position: sticky;
   top: 0;
   z-index: 1000;
+  width: 100%;
 }
 
-.left-section {
+.section {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
 }
 
 .logo img {
@@ -27,7 +29,7 @@ header {
   margin-right: 20px;
 }
 
-a {
+nav a {
   margin: 0 12px;
   text-decoration: none;
   text-decoration-color: #2e005e;

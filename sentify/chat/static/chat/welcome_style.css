@@ -36,26 +36,26 @@
     margin-bottom: 10px;
   }
   
-  .cta {
+  a.cta {
     display: inline-block;
     margin-top: 20px;
-    background-color: #2e005e;
-    color: white ;
+    background-color: rgb(124, 4, 160);
+    color: white; /* Ensures text is white by default */
     padding: 10px 20px;
     border-radius: 25px;
     text-decoration: none;
-    text-decoration-color: white;
     font-weight: bold;
     font-size: 16px;
     text-align: center;
-    transition: background 0.3s;
-    user-select: none;
+    transition: background 0.3s, color 0.3s; /* Added color transition for hover effect */
   }
   
-  .cta:hover {
-    background-color: #471089;
-    color: white;
+  a.cta:hover {
+    background-color: #fcfc63;
+    color: black; /* Keeps text white on hover */
   }
+  
+  
   
   .hero-img img {
     width: 300px;

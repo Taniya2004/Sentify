@@ -18,6 +18,7 @@ def a_page(request):
     return render(request, 'chat/a.html')
 
 def welcome_page(request):
+    print("DEBUG: welcome_page view called")  # Added debug print
     logger.info(f"Accessed welcome_page, user authenticated: {request.user.is_authenticated}")
     logger.info("Rendering welcome.html template.")
     if request.user.is_authenticated:
@@ -145,9 +146,16 @@ def user_register(request):
             form.save()
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=password)
-            login(request, user)
-            return redirect('conversation_list')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('conversation_list')
+            else:
+                messages.error(request, "Authentication failed after registration.")
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
     else:
         form = UserCreationForm()
     return render(request, 'chat/register.html', {'form': form})
