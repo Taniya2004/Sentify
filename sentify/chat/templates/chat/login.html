@@ -5,9 +5,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login - Sentify</title>
+
+  <link rel="stylesheet" href="{% static 'chat/header.css' %}" />
+
   <link rel="stylesheet" href="{% static 'chat/login.css' %}" />
 </head>
 <body>
+  
+  {% include 'chat/header.html' %}
+
   <div class="main-container">
 
     <!-- FORM SECTION (now on left) -->

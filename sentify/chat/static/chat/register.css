@@ -1,165 +1,175 @@
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(120deg, #e0eafc, #cfdef3);
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  background-color: #f5f5ff;
+  color: #2e005e;
+  margin: 0;
+  padding: 0;
+}
+
+.main-container {
+  display: flex;
+  width: 95%;
+  max-width: 1200px;
+  height: auto;
+  border-radius: 25px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+}
+
+.left-section {
+  flex: 1;
+  background: linear-gradient(135deg, #dabfff, #f6eb42);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 40px;
+}
+
+.left-section .overlay {
+  text-align: center;
+  animation: fadeIn 1s ease-in;
+}
+
+.left-section h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+  color: black;
+}
+
+.left-section p {
+  font-size: 16px;
+  margin-bottom: 20px;
+  color: black;
+}
+
+.left-section img {
+  max-width: 350px;
+  width: 100%;
+  animation: float 3s ease-in-out infinite;
+}
+
+.right-section {
+  flex: 1;
+  background: #f8f8ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.register-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 1s ease;
+}
+
+.glassy {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.register-card h1 {
+  color: #2e005e;
+  margin-bottom: 10px;
+}
+
+.register-card p {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.register-card input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.register-card input:focus {
+  border-color: #c194fe;
+  outline: none;
+}
+
+.register-card button {
+  width: 100%;
+  padding: 12px;
+  background-color: #2e005e;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.register-card button:hover {
+  background-color: #533771;
+  transform: scale(1.02);
+}
+
+.message {
+  color: red;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.login-link {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.login-link a {
+  color: #6a00ff;
+  text-decoration: none;
+}
+
+.login-link a:hover {
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@media (max-width: 768px) {
   .main-container {
-    display: flex;
-    width: 95%;
-    max-width: 1200px;
-    height: 90vh;
-    border-radius: 25px;
-    overflow: hidden;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+    flex-direction: column;
+    height: auto;
   }
-  
-  .left-section {
-    flex: 1;
-    background: linear-gradient(135deg, #dabfff, #f6eb42);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    padding: 40px;
-  }
-  
-  .left-section .overlay {
-    text-align: center;
-    animation: fadeIn 1s ease-in;
-  }
-  
-  .left-section h2 {
-    font-size: 28px;
-    margin-bottom: 10px;
-    color: black;
-  }
-  .left-section p {
-    font-size: 16px;
-    margin-bottom: 20px;
-    color: black;
-  }
-  .left-section img {
-    max-width: 350px;
+  .left-section, .right-section {
+    flex: unset;
     width: 100%;
-    animation: float 3s ease-in-out infinite;
-  }
-  
-  .right-section {
-    flex: 1;
-    background: #f8f8ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-  }
-  
-  .register-card {
-    width: 100%;
-    max-width: 400px;
     padding: 30px;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    animation: fadeInUp 1s ease;
   }
-  
-  .glassy {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+  .left-section {
+    border-radius: 0 0 25px 25px;
   }
-  
-  .register-card h1 {
-    color: #2e005e;
-    margin-bottom: 10px;
-  }
-  .register-card p {
-    color: #555;
-    margin-bottom: 20px;
-  }
-  
-  .register-card input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-size: 15px;
-  }
-  .register-card input:focus {
-    border-color: #c194fe;
-    outline: none;
-  }
-  .register-card button {
-    width: 100%;
-    padding: 12px;
-    background-color: #2e005e;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  .register-card button:hover {
-    background-color: #533771;
-    transform: scale(1.02);
-  }
-  
-  .message {
-    color: red;
-    margin-top: 10px;
-    font-size: 14px;
-  }
-  .login-link {
-    margin-top: 15px;
-    font-size: 14px;
-  }
-  .login-link a {
-    color: #6a00ff;
-    text-decoration: none;
-  }
-  .login-link a:hover {
-    text-decoration: underline;
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-  }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-  }
-  
-  /* Responsive */
-  @media (max-width: 768px) {
-    .main-container {
-      flex-direction: column;
-      height: auto;
-    }
-    .left-section, .right-section {
-      flex: unset;
-      width: 100%;
-      padding: 30px;
-    }
-    .left-section {
-      border-radius: 0 0 25px 25px;
-    }
-  }
-  
+}
