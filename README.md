@@ -21,7 +21,7 @@ Sentify is a Django-based chat application that allows users to authenticate, cr
 
 - `sentify/` - Django project configuration files
 - `chat/` - Main chat application with models, views, templates, and static files
-- `db.sqlite3` - SQLite database file
+- `MySQL` - MySQL database file
 - `manage.py` - Django management script
 
 ## Dependencies
