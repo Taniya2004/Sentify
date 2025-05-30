@@ -16,6 +16,7 @@ def chat_messages(request, conversation_id):
         messages.append({
             'content': msg.content,
             'timestamp': msg.timestamp.strftime('%H:%M'),
+            'timestamp_iso': msg.timestamp.isoformat() if msg.timestamp else None,
             'sentiment': msg.sentiment if hasattr(msg, 'sentiment') else '',
             'is_sender': msg.sender == request.user,
         })

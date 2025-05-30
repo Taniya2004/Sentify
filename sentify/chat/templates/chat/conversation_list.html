@@ -5,21 +5,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Sentify Chat</title>
-    <link rel="stylesheet" href="{% static 'chat/style.css' %}" />
+    <link rel="stylesheet" href="{% static 'chat/conversation.css' %}" />
 </head>
 <body>
     <div class="chat-container">
         <div class="sidebar" id="sidebar">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                <h1 style="margin: 0;">Conversations</h1>
-                <div class="user-toggle" style="position: relative;">
-                    <button id="userToggleBtn" style="background: none; border: none; cursor: pointer; padding: 5px; width: 30px; height: 25px; display: flex; flex-direction: column; justify-content: space-between;">
-                        <span style="display: block; height: 3px; background-color: #333; border-radius: 2px;"></span>
-                        <span style="display: block; height: 3px; background-color: #333; border-radius: 2px;"></span>
-                        <span style="display: block; height: 3px; background-color: #333; border-radius: 2px;"></span>
+            <div class="sidebar-header">
+                <h1>Conversations</h1>
+                <div class="user-toggle" id="userToggleContainer" style="position: relative;">
+                    <button id="userToggleBtn" class="menu-btn" aria-label="User menu toggle">
+                        <span></span>
+                        <span></span>
+                        <span></span>
                     </button>
-                    <div id="userDropdown" style="display: none; position: absolute; background: transparent; border: 1px solid #ccc; right: 0; z-index: 1000; min-width: 120px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
-                        <a href="{% url 'logout' %}" style="display: block; padding: 10px 15px; text-decoration: none; color: #333; font-weight: 600; border-radius: 5px;">
+                    <div id="userDropdown" class="dropdown" style="top: 35px; right: 0;">
+                        <a href="{% url 'logout' %}" class="dropdown-item">
                             Logout
                         </a>
                     </div>
@@ -28,11 +28,12 @@
             <div class="conversation-list" id="conversation-list">
                 {% for conversation in conversations %}
                 <a href="#" class="conversation-item" data-conversation-id="{{ conversation.id }}">
+                    <div class="avatar-placeholder" aria-hidden="true">👥</div>
                     <div class="participants">
                         {{ conversation.participants.all|usernames_excluding:request.user }}
                     </div>
                     <div class="last-message">
-                        {% with last_message=conversation.messages.last %}
+                        {% with last_message=conversation.messages.last %} 
                             {% if last_message %}
                                 {{ last_message.content|truncatechars:30 }}
                             {% else %}
@@ -45,23 +46,16 @@
                 <p>No conversations found.</p>
                 {% endfor %}
             </div>
-            <a href="{% url 'new_conversation' %}" style="padding: 15px 20px; display: block; font-weight: 700; background-color: rgba(118, 75, 162, 0.8); text-align: center; border-radius: 0 0 15px 15px;">New Conversation</a>
+            <a href="{% url 'new_conversation' %}" class="new-convo-btn">New Conversation</a>
         </div>
-        <div id="dragbar" style="width: 5px; cursor: col-resize; background-color: rgba(255,255,255,0.2);"></div>
+        <div id="dragbar"></div>
         <div class="main-chat" id="main-chat">
             <div class="chat-header" id="chat-header">
                 Select a conversation
             </div>
-            <!--
-            <div id="welcome-note" style="text-align:center; margin-top: 40px;">
-                <img src="{% static 'chat/logo.png' %}" alt="Sentify Logo" style="height: 120px; margin-bottom: 20px;" />
-                <h2>Welcome to Sentify Chat!</h2>
-                <p>Please select a conversation from the left to start chatting.</p>
-            </div>
-            -->
             <div class="chat-messages" id="chat-messages" style="display:none;">
             </div>
-            <form id="chat-form" method="post" action="" style="display:none;">
+            <form id="chat-form" method="post" action="" style="display:none;" class="chat-form">
                 {% csrf_token %}
                 <input type="text" name="content" id="message-input" placeholder="Type a message" autocomplete="off" required />
                 <button type="submit">Send</button>
@@ -183,15 +177,67 @@
 
                                 const contentDiv = document.createElement('div');
                                 contentDiv.className = 'message-content';
+
+                                // Convert ISO timestamp to IST and format
+                                let timeStr = 'Invalid Date';
+                                let fullDateStr = 'Invalid Date';
+                                if (msg.timestamp_iso) {
+                                    console.log('Raw timestamp_iso:', msg.timestamp_iso);
+                                    const utcDate = new Date(msg.timestamp_iso);
+                                    if (!isNaN(utcDate.getTime())) {
+                                        // Adjust for local timezone offset
+                                        const offsetMinutes = utcDate.getTimezoneOffset();
+                                        const utcTime = new Date(utcDate.getTime() + offsetMinutes * 60000);
+
+                                        const istOffset = 5.5 * 60; // IST is UTC +5:30 in minutes
+                                        const istDate = new Date(utcTime.getTime() + istOffset * 60000);
+
+                                        // Format time as HH:MM (24-hour)
+                                        const hours = istDate.getHours().toString().padStart(2, '0');
+                                        const minutes = istDate.getMinutes().toString().padStart(2, '0');
+                                        timeStr = `${hours}:${minutes}`;
+
+                                        // Format full date for hover tooltip as DD-MM-YYYY HH:MM:SS
+                                        const day = istDate.getDate().toString().padStart(2, '0');
+                                        const month = (istDate.getMonth() + 1).toString().padStart(2, '0');
+                                        const year = istDate.getFullYear();
+                                        const seconds = istDate.getSeconds().toString().padStart(2, '0');
+                                        fullDateStr = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+                                    }
+                                }
+
+                                // Map sentiment to emoji
+                                const sentimentEmoji = msg.sentiment === 'positive' ? '😊' :
+                                    msg.sentiment === 'negative' ? '😞' : '😐';
+
                                 contentDiv.innerHTML = `
-                                    <div>${msg.content}</div>
-                                    <div class="timestamp">${msg.timestamp}</div>
-                                    <div class="sentiment sentiment-hover">[${msg.sentiment}]</div>
+                                    <div title="${fullDateStr}">${msg.content}</div>
+                                    <div class="timestamp">${timeStr}</div>
                                 `;
+
+                                const sentimentSpan = document.createElement('div');
+                                sentimentSpan.className = 'sentiment sentiment-hover ' + (
+                                    msg.sentiment === 'positive' ? 'sentiment-positive' :
+                                    msg.sentiment === 'negative' ? 'sentiment-negative' :
+                                    'sentiment-neutral'
+                                );
+                                sentimentSpan.textContent = sentimentEmoji + ' ' + (msg.sentiment.charAt(0).toUpperCase() + msg.sentiment.slice(1));
+
+                                sentimentSpan.style.display = 'none';
 
                                 msgDiv.appendChild(avatarSpan);
                                 msgDiv.appendChild(contentDiv);
+                                msgDiv.appendChild(sentimentSpan);
                                 chatMessages.appendChild(msgDiv);
+
+                                contentDiv.querySelector('.timestamp').addEventListener('mouseenter', () => {
+                                    sentimentSpan.style.display = 'inline-block';
+                                });
+                                contentDiv.querySelector('.timestamp').addEventListener('mouseleave', () => {
+                                    sentimentSpan.style.display = 'none';
+                                });
+
+                                console.log('Message sentiment:', msg.sentiment, 'Emoji:', sentimentEmoji, 'Timestamp:', timeStr);
                             });
                         }
                         chatMessages.style.display = 'block';
@@ -208,6 +254,7 @@
                     });
             });
 
+            
             // Optional: AJAX form submission for sending messages
             chatForm.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -279,13 +326,46 @@
                         avatarSpan.className = 'avatar';
                         avatarSpan.textContent = '🟢';
 
-                        const contentDiv = document.createElement('div');
-                        contentDiv.className = 'message-content';
-                        contentDiv.innerHTML = `
-                            <div>${data.message.content}</div>
-                            <div class="timestamp">${data.message.timestamp}</div>
-                            <div class="sentiment sentiment-hover">[${data.message.sentiment}]</div>
-                        `;
+                                const contentDiv = document.createElement('div');
+                                contentDiv.className = 'message-content';
+
+                                // Convert ISO timestamp to IST and format
+                                let timeStr = 'Invalid Date';
+                                let fullDateStr = 'Invalid Date';
+                                if (data.message.timestamp_iso) {
+                                    const utcDate = new Date(data.message.timestamp_iso);
+                                    if (!isNaN(utcDate.getTime())) {
+                                        // Adjust for local timezone offset
+                                        const offsetMinutes = utcDate.getTimezoneOffset();
+                                        const utcTime = new Date(utcDate.getTime() + offsetMinutes * 60000);
+
+                                        const istOffset = 5.5 * 60; // IST is UTC +5:30 in minutes
+                                        const istDate = new Date(utcTime.getTime() + istOffset * 60000);
+
+                                        // Format time as HH:MM (24-hour)
+                                        const hours = istDate.getHours().toString().padStart(2, '0');
+                                        const minutes = istDate.getMinutes().toString().padStart(2, '0');
+                                        timeStr = `${hours}:${minutes}`;
+
+                                        // Format full date for hover tooltip as DD-MM-YYYY HH:MM:SS
+                                        const day = istDate.getDate().toString().padStart(2, '0');
+                                        const month = (istDate.getMonth() + 1).toString().padStart(2, '0');
+                                        const year = istDate.getFullYear();
+                                        const seconds = istDate.getSeconds().toString().padStart(2, '0');
+                                        fullDateStr = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+                                    }
+                                }
+
+                                contentDiv.innerHTML = `
+                                    <div title="${fullDateStr}">${data.message.content}
+                                    <span class="sentiment sentiment-hover ${
+                                      data.message.sentiment === 'positive' ? 'sentiment-positive' :
+                                      data.message.sentiment === 'negative' ? 'sentiment-negative' :
+                                      'sentiment-neutral'
+                                    }">${data.message.sentiment.charAt(0).toUpperCase() + data.message.sentiment.slice(1)}</span>
+                                    </div>
+                                    <div class="timestamp">${timeStr}</div>
+                                `;
 
                         msgDiv.appendChild(avatarSpan);
                         msgDiv.appendChild(contentDiv);

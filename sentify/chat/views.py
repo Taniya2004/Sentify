@@ -113,7 +113,8 @@ def send_message(request, conversation_id):
                 'sender': message.sender.username,
                 'content': message.content,
                 'sentiment': message.sentiment,
-                'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                'timestamp_iso': message.timestamp.isoformat() if message.timestamp else None,
             }
         })
     logger.warning(f"Invalid request method {request.method} for send_message by user {request.user}")
