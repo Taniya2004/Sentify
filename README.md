@@ -1,6 +1,8 @@
-# Sentify
+# Sentify - Real-Time Chat with Sentiment Analysis
 
-Sentify is a Django-based chat application that allows users to authenticate, create conversations, and send messages with built-in sentiment analysis. The sentiment of each message is analyzed using TextBlob and categorized as Positive, Negative, or Neutral.
+📌 Sentify is a real-time chat application built using Django and MySQL.  
+It integrates a sentiment analysis model to detect emotions (positive, negative, neutral) in conversations.  
+The app features user authentication, responsive UI, and real-time feedback to enhance chat experience.  
 
 ## Features
 
