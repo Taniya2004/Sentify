@@ -111,7 +111,7 @@ body {
 .login-card button {
   width: 100%;
   padding: 12px;
-  background-color: #2e005e;
+  background: linear-gradient(135deg, #2e005e, #533771);
   color: white;
   border: none;
   border-radius: 10px;
@@ -122,14 +122,19 @@ body {
 }
 
 .login-card button:hover {
-  background-color: #533771;
+  background: linear-gradient(135deg, #533771, #2e005e);
   transform: scale(1.02);
 }
 
 .message {
-  color: red;
-  margin-top: 10px;
-  font-size: 14px;
+  color: #d32f2f;
+  margin-top: 15px;
+  font-size: 16px;
+  text-align: center;
+  background-color: #ffebee;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ffcdd2;
 }
 
 .register-link {

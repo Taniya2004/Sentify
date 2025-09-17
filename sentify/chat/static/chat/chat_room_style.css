@@ -114,7 +114,7 @@
     scrollbar-width: thin;
     scrollbar-color: #6c5bb8 #e0e0e0;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
     border-radius: 10px;
   }
   
@@ -139,19 +139,19 @@
     color: white;
     margin-left: auto;
     margin-right: 0;
-    border-bottom-right-radius: 5px;
+    border-radius: 20px;
     text-align: right;
     display: inline-block;
     max-width: 50%;
     justify-content: flex-end;
   }
-  
+
   .sent-by-other {
     background-color: #e0e0e0; /* gray bubble */
     color: #333;
     margin-right: auto;
     margin-left: 0;
-    border-bottom-left-radius: 5px;
+    border-radius: 20px;
     text-align: left;
     display: inline-block;
     max-width: 70%;
@@ -168,9 +168,27 @@
     margin-left: 10px;
     align-self: flex-end;
   }
-  
+
   .sentiment {
-    font-style: italic;
+    font-size: 1.2rem;
+    animation: bounceIn 0.6s ease-out;
+  }
+
+  @keyframes bounceIn {
+    0% {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
   
   #chat-form {

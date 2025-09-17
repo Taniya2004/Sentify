@@ -158,7 +158,7 @@
                         // Update chat messages
                         chatMessages.innerHTML = '';
                         if (data.messages.length === 0) {
-                            chatMessages.innerHTML = '<p>No messages yet.</p>';
+                            chatMessages.innerHTML = '<p>Start a new conversation.</p>';
                         } else {
                             data.messages.forEach(msg => {
                                 const msgDiv = document.createElement('div');
@@ -207,8 +207,9 @@
                                 }
 
                                 // Map sentiment to emoji
-                                const sentimentEmoji = msg.sentiment === 'positive' ? '😊' :
-                                    msg.sentiment === 'negative' ? '😞' : '😐';
+                                const sentiment = msg.sentiment.toLowerCase();
+                                const sentimentEmoji = sentiment === 'positive' ? '😊' :
+                                    sentiment === 'negative' ? '😠' : '😐';
 
                                 contentDiv.innerHTML = `
                                     <div title="${fullDateStr}">${msg.content}</div>
@@ -217,11 +218,11 @@
 
                                 const sentimentSpan = document.createElement('div');
                                 sentimentSpan.className = 'sentiment sentiment-hover ' + (
-                                    msg.sentiment === 'positive' ? 'sentiment-positive' :
-                                    msg.sentiment === 'negative' ? 'sentiment-negative' :
+                                    sentiment === 'positive' ? 'sentiment-positive' :
+                                    sentiment === 'negative' ? 'sentiment-negative' :
                                     'sentiment-neutral'
                                 );
-                                sentimentSpan.textContent = sentimentEmoji + ' ' + (msg.sentiment.charAt(0).toUpperCase() + msg.sentiment.slice(1));
+                                sentimentSpan.textContent = sentimentEmoji;
 
                                 sentimentSpan.style.display = 'none';
 
@@ -317,7 +318,7 @@
                             msgDiv.style.marginLeft = '0';
                         }
                         // Dynamically set max width based on chat container width
-                        const maxWidth = chatMessages.clientWidth * 0.7; // 70% max width
+                        const maxWidth = chatMessages.clientWidth * 0.9; // 70% max width
                         msgDiv.style.maxWidth = maxWidth + 'px';
                         msgDiv.style.whiteSpace = 'normal'; // allow wrapping
 
@@ -356,13 +357,18 @@
                                     }
                                 }
 
+                                // Map sentiment to emoji
+                                const sentiment = data.message.sentiment.toLowerCase();
+                                const sentimentEmoji = sentiment === 'positive' ? '😊' :
+                                    sentiment === 'negative' ? '😠' : '😐';
+
                                 contentDiv.innerHTML = `
                                     <div title="${fullDateStr}">${data.message.content}
                                     <span class="sentiment sentiment-hover ${
-                                      data.message.sentiment === 'positive' ? 'sentiment-positive' :
-                                      data.message.sentiment === 'negative' ? 'sentiment-negative' :
+                                      sentiment === 'positive' ? 'sentiment-positive' :
+                                      sentiment === 'negative' ? 'sentiment-negative' :
                                       'sentiment-neutral'
-                                    }">${data.message.sentiment.charAt(0).toUpperCase() + data.message.sentiment.slice(1)}</span>
+                                    }">${sentimentEmoji}</span>
                                     </div>
                                     <div class="timestamp">${timeStr}</div>
                                 `;

@@ -1,0 +1,99 @@
+/* New Conversation Page Styles */
+
+body {
+  background-color: #f5f5ff;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.new-conversation-container {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  padding: 40px 50px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.new-conversation-container h1 {
+  color: #2e005e;
+  margin-bottom: 20px;
+}
+
+.new-conversation-form label {
+  display: block;
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #4a2c6b;
+}
+
+.new-conversation-form input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #cbb9e6;
+  font-size: 15px;
+  margin-bottom: 20px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.new-conversation-form input[type="text"]:focus {
+  border-color: #7a5e8a;
+  box-shadow: 0 0 8px rgba(122, 94, 138, 0.6);
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.btn {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2e005e, #533771);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #533771, #2e005e);
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  background: #cbb9e6;
+  color: #6b4c7b;
+}
+
+.btn-secondary:hover {
+  background: #a78bca;
+  color: white;
+  transform: scale(1.05);
+}
+
+.error {
+  color: #dc3545;
+  margin-bottom: 15px;
+  font-weight: 600;
+}

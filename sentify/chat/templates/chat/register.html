@@ -31,9 +31,28 @@
         <p>Create your account to get started</p>
         <form method="POST">
           {% csrf_token %}
-          <input type="text" name="username" placeholder="Username" required />
-          <input type="password" name="password1" placeholder="Password" required />
-          <input type="password" name="password2" placeholder="Confirm Password" required />
+          {{ form.non_field_errors }}
+          <p>
+            {{ form.username.label_tag }}<br />
+            {{ form.username }}
+            {% for error in form.username.errors %}
+              <span class="message">{{ error }}</span>
+            {% endfor %}
+          </p>
+          <p>
+            {{ form.password1.label_tag }}<br />
+            {{ form.password1 }}
+            {% for error in form.password1.errors %}
+              <span class="message">{{ error }}</span>
+            {% endfor %}
+          </p>
+          <p>
+            {{ form.password2.label_tag }}<br />
+            {{ form.password2 }}
+            {% for error in form.password2.errors %}
+              <span class="message">{{ error }}</span>
+            {% endfor %}
+          </p>
           <button type="submit">Register</button>
         </form>
         {% if messages %}
