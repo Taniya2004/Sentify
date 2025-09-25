@@ -223,7 +223,6 @@
                                     'sentiment-neutral'
                                 );
                                 sentimentSpan.textContent = sentimentEmoji;
-
                                 sentimentSpan.style.display = 'none';
 
                                 msgDiv.appendChild(avatarSpan);
@@ -363,19 +362,30 @@
                                     sentiment === 'negative' ? '😠' : '😐';
 
                                 contentDiv.innerHTML = `
-                                    <div title="${fullDateStr}">${data.message.content}
-                                    <span class="sentiment sentiment-hover ${
-                                      sentiment === 'positive' ? 'sentiment-positive' :
-                                      sentiment === 'negative' ? 'sentiment-negative' :
-                                      'sentiment-neutral'
-                                    }">${sentimentEmoji}</span>
-                                    </div>
+                                    <div title="${fullDateStr}">${data.message.content}</div>
                                     <div class="timestamp">${timeStr}</div>
                                 `;
 
+                                const sentimentSpan = document.createElement('div');
+                                sentimentSpan.className = 'sentiment sentiment-hover ' + (
+                                    sentiment === 'positive' ? 'sentiment-positive' :
+                                    sentiment === 'negative' ? 'sentiment-negative' :
+                                    'sentiment-neutral'
+                                );
+                                sentimentSpan.textContent = sentimentEmoji;
+                                sentimentSpan.style.display = 'none';
+
                         msgDiv.appendChild(avatarSpan);
                         msgDiv.appendChild(contentDiv);
+                        msgDiv.appendChild(sentimentSpan);
                         chatMessages.appendChild(msgDiv);
+
+                        contentDiv.querySelector('.timestamp').addEventListener('mouseenter', () => {
+                            sentimentSpan.style.display = 'inline-block';
+                        });
+                        contentDiv.querySelector('.timestamp').addEventListener('mouseleave', () => {
+                            sentimentSpan.style.display = 'none';
+                        });
                         chatMessages.style.display = 'block';
                         chatMessages.scrollTop = chatMessages.scrollHeight;
                         messageInput.value = '';

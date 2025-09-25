@@ -3,14 +3,18 @@
 .chat-container {
   display: flex;
   height: 100vh;
-  background: linear-gradient(135deg, #dabfff, #f6eb42);
+  background-image: url('logo.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+  background-size: cover;
   font-family: 'Inter', sans-serif;
 }
 
 .sidebar {
   width: 320px;
-  background: linear-gradient(135deg, #7a5e8a, #cbb9e6);
-  color: #f9f0fb;
+  background: rgba(255, 255, 255, 0.9);
+  color: #7a5e8a;
   display: flex;
   flex-direction: column;
   border-radius: 15px 0 0 15px;
@@ -19,7 +23,7 @@
 }
 
 .sidebar-header {
-  background: #f9f0fb;
+  background: white;
   color: #7a5e8a;
   display: flex;
   align-items: center;
@@ -114,7 +118,7 @@
   display: flex;
   align-items: center;
   padding: 15px;
-  background: #f9f0fb;
+  background: white;
   border-radius: 12px;
   margin-bottom: 12px;
   color: #7a5e8a;
@@ -157,8 +161,8 @@
 .new-convo-btn {
   margin-top: 10px;
   padding: 15px 20px;
-  background: linear-gradient(135deg, #7a5e8a, #cbb9e6);
-  color: #f9f0fb;
+  background: white;
+  color: #7a5e8a;
   text-align: center;
   border-radius: 0 0 15px 15px;
   font-weight: 700;
@@ -187,7 +191,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #dabfff, #f6eb42);
+  background: white;
   border-radius: 0 12px 12px 0;
   overflow: hidden;
   box-shadow: -2px 0 8px rgba(107, 76, 123, 0.05);
@@ -195,8 +199,8 @@
 
 .chat-header {
   padding: 20px;
-  background: #7a5e8a;
-  color: #f9f0fb;
+  background: white;
+  color: #7a5e8a;
   font-size: 1.4rem;
   font-weight: 700;
   text-shadow: 0 0 3px rgba(0,0,0,0.1);
