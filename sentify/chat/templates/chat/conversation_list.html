@@ -65,6 +65,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM fully loaded and parsed');
+
+            // Pass logged-in user from Django
+            const currentUser = "{{ request.user.username }}";
+
             const toggleBtn = document.getElementById('userToggleBtn');
             const dropdown = document.getElementById('userDropdown');
             const conversationList = document.getElementById('conversation-list');
@@ -72,8 +76,6 @@
             const chatMessages = document.getElementById('chat-messages');
             const chatForm = document.getElementById('chat-form');
             const messageInput = document.getElementById('message-input');
-
-            console.log('Conversation list element:', conversationList);
 
             // User menu toggle
             toggleBtn.addEventListener('click', function() {
@@ -128,23 +130,16 @@
 
             // Load chat messages dynamically when a conversation is clicked
             conversationList.addEventListener('click', function(e) {
-                console.log('Click event on conversation list:', e);
                 const target = e.target.closest('.conversation-item');
                 if (!target) {
-                    console.log('Clicked element is not a conversation item');
                     return;
                 }
                 e.preventDefault();
 
-                console.log('Conversation clicked:', target);
-
                 const conversationId = target.getAttribute('data-conversation-id');
                 if (!conversationId) {
-                    console.warn('No conversation ID found on clicked item');
                     return;
                 }
-
-                console.log('Fetching messages for conversation ID:', conversationId);
 
                 // Fetch chat messages via AJAX
                 fetch(`/ajax/chat/messages/${conversationId}/`, { credentials: 'same-origin' })
@@ -152,8 +147,9 @@
                     .then(data => {
                         console.log('Received chat messages:', data);
 
-                        // Update chat header
-                        chatHeader.textContent = 'Chat with ' + data.participants.join(', ');
+                        // ✅ Update chat header (exclude logged-in user)
+                        const otherParticipants = data.participants.filter(name => name !== currentUser);
+                        chatHeader.textContent = (otherParticipants.length > 0 ? otherParticipants.join(', ') : 'Yourself');
 
                         // Update chat messages
                         chatMessages.innerHTML = '';
@@ -163,14 +159,8 @@
                             data.messages.forEach(msg => {
                                 const msgDiv = document.createElement('div');
                                 msgDiv.className = 'message ' + (msg.is_sender ? 'sent-by-me' : 'sent-by-other');
-                                // Remove inline styles to allow CSS to control layout
-                                msgDiv.style.textAlign = '';
-                                msgDiv.style.marginLeft = '';
-                                msgDiv.style.marginRight = '';
-                                msgDiv.style.maxWidth = '';
-                                msgDiv.style.whiteSpace = 'normal'; // allow wrapping
+                                msgDiv.style.whiteSpace = 'normal';
 
-                                // Add avatar emoji before message content
                                 const avatarSpan = document.createElement('span');
                                 avatarSpan.className = 'avatar';
                                 avatarSpan.textContent = msg.is_sender ? '🟢' : '⚪';
@@ -182,22 +172,15 @@
                                 let timeStr = 'Invalid Date';
                                 let fullDateStr = 'Invalid Date';
                                 if (msg.timestamp_iso) {
-                                    console.log('Raw timestamp_iso:', msg.timestamp_iso);
                                     const utcDate = new Date(msg.timestamp_iso);
                                     if (!isNaN(utcDate.getTime())) {
-                                        // Adjust for local timezone offset
                                         const offsetMinutes = utcDate.getTimezoneOffset();
                                         const utcTime = new Date(utcDate.getTime() + offsetMinutes * 60000);
-
-                                        const istOffset = 5.5 * 60; // IST is UTC +5:30 in minutes
+                                        const istOffset = 5.5 * 60; 
                                         const istDate = new Date(utcTime.getTime() + istOffset * 60000);
-
-                                        // Format time as HH:MM (24-hour)
                                         const hours = istDate.getHours().toString().padStart(2, '0');
                                         const minutes = istDate.getMinutes().toString().padStart(2, '0');
                                         timeStr = `${hours}:${minutes}`;
-
-                                        // Format full date for hover tooltip as DD-MM-YYYY HH:MM:SS
                                         const day = istDate.getDate().toString().padStart(2, '0');
                                         const month = (istDate.getMonth() + 1).toString().padStart(2, '0');
                                         const year = istDate.getFullYear();
@@ -206,7 +189,7 @@
                                     }
                                 }
 
-                                // Map sentiment to emoji
+                                // Sentiment mapping
                                 const sentiment = msg.sentiment.toLowerCase();
                                 const sentimentEmoji = sentiment === 'positive' ? '😊' :
                                     sentiment === 'negative' ? '😠' : '😐';
@@ -236,16 +219,12 @@
                                 contentDiv.querySelector('.timestamp').addEventListener('mouseleave', () => {
                                     sentimentSpan.style.display = 'none';
                                 });
-
-                                console.log('Message sentiment:', msg.sentiment, 'Emoji:', sentimentEmoji, 'Timestamp:', timeStr);
                             });
                         }
                         chatMessages.style.display = 'block';
 
-                        // Show chat form and update form action
                         chatForm.style.display = 'block';
                         chatForm.action = `/chat/${conversationId}/send_message/`;
-                        console.log('Form action set to:', chatForm.action);
                         messageInput.value = '';
                         messageInput.focus();
                     })
@@ -254,23 +233,21 @@
                     });
             });
 
-            
-            // Optional: AJAX form submission for sending messages
+            // AJAX form submission for sending messages
             chatForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                console.log('Submitting chat form with action:', chatForm.action);
                 if (!chatForm.action) {
                     alert('Please select a conversation before sending a message.');
                     return;
                 }
                 const formData = new FormData(chatForm);
+
                 function getCookie(name) {
                     let cookieValue = null;
                     if (document.cookie && document.cookie !== '') {
                         const cookies = document.cookie.split(';');
                         for (let i = 0; i < cookies.length; i++) {
                             const cookie = cookies[i].trim();
-                            // Does this cookie string begin with the name we want?
                             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                                 break;
@@ -290,90 +267,57 @@
                     },
                     credentials: 'same-origin',
                 })
-                .then(response => {
-                    console.log('Fetch response:', response);
-                    return response.text().then(text => {
-                        console.log('Response text:', text);
-                        try {
-                            return JSON.parse(text);
-                        } catch (e) {
-                            throw new Error('Invalid JSON: ' + e.message);
-                        }
-                    });
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log('Send message response:', data);
-                        if (data.success) {
-                        // Append new message to chatMessages
+                    if (data.success) {
                         const msgDiv = document.createElement('div');
                         msgDiv.className = 'message sent-by-me';
-                        if (msgDiv.classList.contains('sent-by-me')) {
-                            msgDiv.style.textAlign = 'right';
-                            msgDiv.style.marginLeft = 'auto';
-                            msgDiv.style.marginRight = '0';
-                        } else {
-                            msgDiv.style.textAlign = 'left';
-                            msgDiv.style.marginRight = 'auto';
-                            msgDiv.style.marginLeft = '0';
-                        }
-                        // Dynamically set max width based on chat container width
-                        const maxWidth = chatMessages.clientWidth * 0.9; // 70% max width
-                        msgDiv.style.maxWidth = maxWidth + 'px';
-                        msgDiv.style.whiteSpace = 'normal'; // allow wrapping
+                        msgDiv.style.whiteSpace = 'normal';
 
-                        // Add avatar emoji before message content
                         const avatarSpan = document.createElement('span');
                         avatarSpan.className = 'avatar';
                         avatarSpan.textContent = '🟢';
 
-                                const contentDiv = document.createElement('div');
-                                contentDiv.className = 'message-content';
+                        const contentDiv = document.createElement('div');
+                        contentDiv.className = 'message-content';
 
-                                // Convert ISO timestamp to IST and format
-                                let timeStr = 'Invalid Date';
-                                let fullDateStr = 'Invalid Date';
-                                if (data.message.timestamp_iso) {
-                                    const utcDate = new Date(data.message.timestamp_iso);
-                                    if (!isNaN(utcDate.getTime())) {
-                                        // Adjust for local timezone offset
-                                        const offsetMinutes = utcDate.getTimezoneOffset();
-                                        const utcTime = new Date(utcDate.getTime() + offsetMinutes * 60000);
+                        let timeStr = 'Invalid Date';
+                        let fullDateStr = 'Invalid Date';
+                        if (data.message.timestamp_iso) {
+                            const utcDate = new Date(data.message.timestamp_iso);
+                            if (!isNaN(utcDate.getTime())) {
+                                const offsetMinutes = utcDate.getTimezoneOffset();
+                                const utcTime = new Date(utcDate.getTime() + offsetMinutes * 60000);
+                                const istOffset = 5.5 * 60; 
+                                const istDate = new Date(utcTime.getTime() + istOffset * 60000);
+                                const hours = istDate.getHours().toString().padStart(2, '0');
+                                const minutes = istDate.getMinutes().toString().padStart(2, '0');
+                                timeStr = `${hours}:${minutes}`;
+                                const day = istDate.getDate().toString().padStart(2, '0');
+                                const month = (istDate.getMonth() + 1).toString().padStart(2, '0');
+                                const year = istDate.getFullYear();
+                                const seconds = istDate.getSeconds().toString().padStart(2, '0');
+                                fullDateStr = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+                            }
+                        }
 
-                                        const istOffset = 5.5 * 60; // IST is UTC +5:30 in minutes
-                                        const istDate = new Date(utcTime.getTime() + istOffset * 60000);
+                        const sentiment = data.message.sentiment.toLowerCase();
+                        const sentimentEmoji = sentiment === 'positive' ? '😊' :
+                            sentiment === 'negative' ? '😠' : '😐';
 
-                                        // Format time as HH:MM (24-hour)
-                                        const hours = istDate.getHours().toString().padStart(2, '0');
-                                        const minutes = istDate.getMinutes().toString().padStart(2, '0');
-                                        timeStr = `${hours}:${minutes}`;
+                        contentDiv.innerHTML = `
+                            <div title="${fullDateStr}">${data.message.content}</div>
+                            <div class="timestamp">${timeStr}</div>
+                        `;
 
-                                        // Format full date for hover tooltip as DD-MM-YYYY HH:MM:SS
-                                        const day = istDate.getDate().toString().padStart(2, '0');
-                                        const month = (istDate.getMonth() + 1).toString().padStart(2, '0');
-                                        const year = istDate.getFullYear();
-                                        const seconds = istDate.getSeconds().toString().padStart(2, '0');
-                                        fullDateStr = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
-                                    }
-                                }
-
-                                // Map sentiment to emoji
-                                const sentiment = data.message.sentiment.toLowerCase();
-                                const sentimentEmoji = sentiment === 'positive' ? '😊' :
-                                    sentiment === 'negative' ? '😠' : '😐';
-
-                                contentDiv.innerHTML = `
-                                    <div title="${fullDateStr}">${data.message.content}</div>
-                                    <div class="timestamp">${timeStr}</div>
-                                `;
-
-                                const sentimentSpan = document.createElement('div');
-                                sentimentSpan.className = 'sentiment sentiment-hover ' + (
-                                    sentiment === 'positive' ? 'sentiment-positive' :
-                                    sentiment === 'negative' ? 'sentiment-negative' :
-                                    'sentiment-neutral'
-                                );
-                                sentimentSpan.textContent = sentimentEmoji;
-                                sentimentSpan.style.display = 'none';
+                        const sentimentSpan = document.createElement('div');
+                        sentimentSpan.className = 'sentiment sentiment-hover ' + (
+                            sentiment === 'positive' ? 'sentiment-positive' :
+                            sentiment === 'negative' ? 'sentiment-negative' :
+                            'sentiment-neutral'
+                        );
+                        sentimentSpan.textContent = sentimentEmoji;
+                        sentimentSpan.style.display = 'none';
 
                         msgDiv.appendChild(avatarSpan);
                         msgDiv.appendChild(contentDiv);
@@ -386,7 +330,7 @@
                         contentDiv.querySelector('.timestamp').addEventListener('mouseleave', () => {
                             sentimentSpan.style.display = 'none';
                         });
-                        chatMessages.style.display = 'block';
+
                         chatMessages.scrollTop = chatMessages.scrollHeight;
                         messageInput.value = '';
                     } else {
